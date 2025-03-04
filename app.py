@@ -9,7 +9,6 @@ import streamlit as st
 import mysql.connector
 
 def black_scholes(S, K, T, r, sigma, option_type):
-    """Calculate Black-Scholes option price."""
     d1 = (math.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * math.sqrt(T))
     d2 = d1 - sigma * math.sqrt(T)
     if option_type == "call":
@@ -23,8 +22,7 @@ def black_scholes(S, K, T, r, sigma, option_type):
 # Step 2: GUI Layer
 def streamlit_app():
     st.title("Black-Scholes Option Pricing Tool")
-
-    # User inputs
+    
     S = st.number_input("Asset price (S)", value=100.0, step=0.1)
     K = st.number_input("Strike price (K)", value=100.0, step=0.1)
     T = st.number_input("Time to expiry (T in years)", value=1.0, step=0.1)
@@ -33,7 +31,6 @@ def streamlit_app():
     option_type = st.selectbox("Option type", ["call", "put"])
     purchase_price = st.number_input("Purchase price of the option", value=0.0, step=0.1)
 
-    # Calculate option price
     price = black_scholes(S, K, T, r, sigma, option_type)
     st.write(f"The {option_type} price is: {price:.2f}")
 
@@ -75,7 +72,6 @@ def save_to_database(S, K, T, r, sigma, option_type, purchase_price, df):
         )
         cursor = conn.cursor()
 
-        # Save inputs
         input_query = """
             INSERT INTO inputs_table (asset_price, strike_price, time_to_expiry, risk_free_rate, volatility, option_type)
             VALUES (%s, %s, %s, %s, %s, %s)
@@ -84,7 +80,6 @@ def save_to_database(S, K, T, r, sigma, option_type, purchase_price, df):
         cursor.execute(input_query, input_values)
         calculation_id = cursor.lastrowid
 
-        # Save outputs
         for vol, row in zip(df.index, df.values):
             for sp, pnl in zip(df.columns, row):
                 output_query = """
@@ -100,5 +95,4 @@ def save_to_database(S, K, T, r, sigma, option_type, purchase_price, df):
     except mysql.connector.Error as err:
         st.error(f"Error: {err}")
 
-# Uncomment the line below to run the Streamlit app
-# streamlit_app()
+streamlit_app()
